@@ -1,0 +1,86 @@
+{
+  "console": {
+    "host": "127.0.0.1",
+    "port": 8088,
+    "session_ttl_s": 43200,
+    "web_root": "./web"
+  },
+  "agents": [
+    {
+      "id": "a",
+      "display_name": "Assistant A",
+      "owner": "owner-a",
+      "channel": "channel-a",
+      "persona_file": "persona/a.md"
+    },
+    {
+      "id": "b",
+      "display_name": "Assistant B",
+      "owner": "owner-b",
+      "channel": "channel-b",
+      "persona_file": "persona/b.md"
+    }
+  ],
+  "channels": [
+    {
+      "id": "channel-a",
+      "kind": "instant-message-bridge",
+      "agent": "a",
+      "endpoint": "http://127.0.0.1:9090/channel-a",
+      "token": "env:COLA_CHANNEL_A_TOKEN"
+    },
+    {
+      "id": "channel-b",
+      "kind": "instant-message-bridge",
+      "agent": "b",
+      "endpoint": "http://127.0.0.1:9090/channel-b",
+      "token": "env:COLA_CHANNEL_B_TOKEN"
+    }
+  ],
+  "models": {
+    "chat": [
+      {
+        "provider": "openai-compatible",
+        "base_url": "https://api.example.invalid/v1",
+        "model": "your-chat-model",
+        "api_key": "env:COLA_MODEL_KEY"
+      }
+    ],
+    "embedding": {
+      "provider": "openai-compatible",
+      "base_url": "https://api.example.invalid/v1",
+      "model": "your-embedding-model",
+      "api_key": "env:COLA_MODEL_KEY"
+    }
+  },
+  "memory": {
+    "sqlite_path": "./data/memory.db",
+    "vector_path": "./data/vectors",
+    "fact_decay_days": 30,
+    "recall_top_k": 6
+  },
+  "diary": {
+    "dir": "./data/diary",
+    "write_at": "22:30"
+  },
+  "tools": {
+    "web_fetch": {
+      "enabled": true,
+      "timeout_s": 20
+    },
+    "browser": {
+      "enabled": true,
+      "max_concurrent": 1,
+      "memory_budget_mb": 1024,
+      "action_timeout_s": 120,
+      "allow_private_networks": false
+    },
+    "scheduler": {
+      "enabled": true
+    }
+  },
+  "paths": {
+    "root": "./data",
+    "logs": "./data/logs"
+  }
+}

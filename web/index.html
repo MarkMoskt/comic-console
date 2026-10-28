@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cola · 陪伴式微信机器人（接口约定版）</title>
+<meta name="description" content="Cola 的对外接口契约与目录骨架：能力清单、字段与边界公开，实现闭源。">
+<style>
+  :root{
+    --bg:#0b0c0e; --panel:#111316; --panel-2:#15181c; --line:#232830;
+    --text:#e8eaed; --muted:#9aa3ad; --dim:#6b7480;
+    --amber:#e6b450; --amber-dim:#8a6a2a; --ok:#4bbf8a; --warn:#e07a5f;
+    --mono:ui-monospace,SFMono-Regular,"Cascadia Code",Consolas,monospace;
+    --sans:"Inter","PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.7;
+       -webkit-font-smoothing:antialiased}
+  a{color:var(--amber);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 24px}
+  header{position:sticky;top:0;z-index:10;background:rgba(11,12,14,.82);
+         backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:58px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:650;letter-spacing:.2px}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--amber);box-shadow:0 0 14px rgba(230,180,80,.55)}
+  .nav nav{display:flex;gap:22px;font-size:14px}
+  .nav nav a{color:var(--muted)}
+  .nav nav a:hover{color:var(--text);text-decoration:none}
+  .hero{padding:96px 0 64px;border-bottom:1px solid var(--line);
+        background:radial-gradient(900px 380px at 18% -10%,rgba(230,180,80,.10),transparent 62%)}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.18em;color:var(--dim);text-transform:uppercase}
+  h1{font-size:clamp(44px,7vw,76px);line-height:1.02;margin:18px 0 10px;letter-spacing:-.03em}
+  h1 span{color:var(--amber)}
+  .lede{max-width:680px;color:var(--muted);font-size:17px;margin:0 0 26px}
+  .lede b{color:var(--text);font-weight:600}
+  .badges{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:30px}
+  .pill{font-family:var(--mono);font-size:12px;padding:5px 11px;border-radius:999px;
+        border:1px solid var(--line);color:var(--muted);background:var(--panel)}
+  .pill.ok{color:var(--ok);border-color:rgba(75,191,138,.28)}
+  .pill.warn{color:var(--warn);border-color:rgba(224,122,95,.28)}
+  .cta{display:flex;flex-wrap:wrap;gap:12px}
+  .btn{display:inline-block;padding:11px 20px;border-radius:8px;font-size:14px;font-weight:600;
+       border:1px solid var(--line);color:var(--text);background:var(--panel);transition:.15s}
+  .btn:hover{text-decoration:none;border-color:#323a45;transform:translateY(-1px)}
+  .btn.primary{background:var(--amber);border-color:var(--amber);color:#1b1405}
+  .btn.primary:hover{background:#f0c264}
+  section{padding:64px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:24px;margin:0 0 8px;letter-spacing:-.01em}
+  .sub{color:var(--dim);font-size:14px;margin:0 0 30px}
+  .grid{display:grid;gap:14px}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g2{grid-template-columns:repeat(2,1fr)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px}
+  .card h3{font-size:15px;margin:0 0 6px}
+  .card p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.65}
+  .card .k{font-family:var(--mono);font-size:11px;color:var(--amber-dim);letter-spacing:.1em;display:block;margin-bottom:10px}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .list{list-style:none;margin:0;padding:0;font-size:14px}
+  .list li{padding:9px 0;border-bottom:1px dashed var(--line);color:var(--muted);display:flex;gap:10px}
+  .list li:last-child{border-bottom:0}
+  .list .y{color:var(--ok)} .list .n{color:var(--dim)}
+  .list b{color:var(--text);font-weight:600}
+  pre{background:#0e1013;border:1px solid var(--line);border-radius:10px;padding:16px 18px;overflow:auto;
+      font-family:var(--mono);font-size:13px;line-height:1.75;color:#cfd6de;margin:0 0 12px}
+  pre .c{color:var(--dim)} pre .p{color:var(--amber)} pre .g{color:var(--ok)} pre .r{color:var(--warn)}
+  code{font-family:var(--mono);font-size:.92em;background:var(--panel-2);padding:1px 6px;border-radius:5px}
+  .arch{display:flex;flex-direction:column;gap:8px;font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  .box{flex:1;min-width:120px;border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--panel);text-align:center}
+  .box em{display:block;color:var(--dim);font-style:normal;font-size:11px;margin-top:3px}
+  .box.hi{border-color:var(--amber-dim);color:var(--text)}
+  .arrow{text-align:center;color:var(--dim)}
+  .why{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .why .num{font-family:var(--mono);color:var(--amber);font-size:12px;letter-spacing:.14em}
+  footer{padding:38px 0 56px;color:var(--dim);font-size:13px}
+  footer .wrap{display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between}
+  @media(max-width:860px){
+    .g4{grid-template-columns:repeat(2,1fr)}
+    .g3,.why{grid-template-columns:1fr}
+    .split,.g2{grid-template-columns:1fr}
+    .nav nav{display:none}
+    .hero{padding:70px 0 48px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="brand"><span class="dot"></span> Cola</div>
+    <nav>
+      <a href="#capabilities">能力</a>
+      <a href="#inside">仓库里有什么</a>
+      <a href="#start">先跑一下</a>
+      <a href="#why">为什么闭源</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Interface contract · snapshot 2026-10-28</div>
+    <h1>Cola <span>·</span> 陪伴伙伴</h1>
+    <p class="lede">
+      两个 AI，各自陪一个人；一本共享的账，四层记忆，每晚一篇日记，会自己开口。
+      这是它的<b>对外接口</b>与<b>目录骨架</b>——<b>实现不在这里</b>。
+    </p>
+    <div class="badges">
+      <span class="pill ok">GET /api/status → 200</span>
+      <span class="pill warn">其余 /api/* → 501</span>
+      <span class="pill">MIT · skeleton only</span>
+      <span class="pill">no data, no keys</span>
+    </div>
+    <div class="cta">
+      <a class="btn primary" href="docs/API.md">读接口契约</a>
+      <a class="btn" href="docs/ARCHITECTURE.md">看架构</a>
+      <a class="btn" href="docs/IMPLEMENTING.md">自己实现的路线图</a>
+    </div>
+  </div>
+</div>
+
+<section id="capabilities">
+  <div class="wrap">
+    <h2>线上那套系统有什么</h2>
+    <p class="sub">这些能力确实在运行，只是实现闭源。下面只说边界，不说做法。</p>
+    <div class="grid g4">
+      <div class="card"><span class="k">01 / DUAL</span><h3>双人格、双通道</h3><p>两个 AI 各有微信通道、称呼与语气，互不串台；同一个问题，两种回答。</p></div>
+      <div class="card"><span class="k">02 / LEDGER</span><h3>共享账本</h3><p>A 说过的话，B 也能查到；记忆按人分开，共同经历只有一份。</p></div>
+      <div class="card"><span class="k">03 / MEMORY</span><h3>四层记忆</h3><p>会话、事实、向量库、检索召回；按相关度与时效衰减，不是把所有历史塞进上下文。</p></div>
+      <div class="card"><span class="k">04 / DIARY</span><h3>日记与情绪</h3><p>白天按对话打分，夜里写一篇日记；当天对话是唯一事实来源，不凭空编。</p></div>
+      <div class="card"><span class="k">05 / PROACTIVE</span><h3>主动开口</h3><p>不是只会应答：长时间无话、情绪到位、有未完成的约定时，会自己开口——也会忍住不说。</p></div>
+      <div class="card"><span class="k">06 / CHANNEL</span><h3>微信通道</h3><p>个人微信收发、登录确认、图片与表情包、文件桥；去重、限速、断线重连。</p></div>
+      <div class="card"><span class="k">07 / CONSOLE</span><h3>网页控制台</h3><p>状态、记忆计数、情绪曲线、流量、事件流、成长谱系；对话页可直连大脑。</p></div>
+      <div class="card"><span class="k">08 / WEB</span><h3>网页能力</h3><p>轻量抓取直取正文；需要点按翻页才拉起真浏览器——只去公网、一次一个、有内存预算。</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="inside">
+  <div class="wrap">
+    <h2>仓库里有什么</h2>
+    <p class="sub">图纸给你，房子自己盖。下面左右两栏，就是全部。</p>
+    <div class="split">
+      <div class="card">
+        <h3>有</h3>
+        <ul class="list">
+          <li><span class="y">●</span><span><b>接口契约</b>：请求、响应、错误码、501 语义</span></li>
+          <li><span class="y">●</span><span><b>目录骨架</b>：六层职责说明，没有实现</span></li>
+          <li><span class="y">●</span><span><b>契约桩</b>：<code>server.py</code>，仅标准库</span></li>
+          <li><span class="y">●</span><span><b>公开落地页</b>：你正在看的这一页</span></li>
+          <li><span class="y">●</span><span><b>示例配置</b>：占位符，无真实地址与密钥</span></li>
+          <li><span class="y">●</span><span><b>实现路线图</b>：顺序、验收、十个坑</span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>没有</h3>
+        <ul class="list">
+          <li><span class="n">○</span><span>AI 编排与工具实现</span></li>
+          <li><span class="n">○</span><span>记忆库、日记生成、情绪打分</span></li>
+          <li><span class="n">○</span><span>微信桥接与登录通道</span></li>
+          <li><span class="n">○</span><span>人格提示词与说话契约</span></li>
+          <li><span class="n">○</span><span>部署器、回滚、闸门实现</span></li>
+          <li><span class="n">○</span><span>任何真实数据、地址、凭据</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="start">
+  <div class="wrap">
+    <h2>先跑一下</h2>
+    <p class="sub">没有依赖，没有安装脚本。跑起来看到的就是契约本身：首页 200，状态 200，其余 501。</p>
+    <pre><span class="c"># 启动契约桩（仅标准库）</span>
+python3 server.py
+<span class="c"># → http://127.0.0.1:8088</span>
+
+<span class="p">$</span> curl -s http://127.0.0.1:8088/api/status
+<span class="g">{ "name": "Cola", "series": "Comic", "version": "contract-only",
+  "service": "stub", "implemented": false, "counts": { ... } }</span>
+
+<span class="p">$</span> curl -s http://127.0.0.1:8088/api/diary
+<span class="r">{ "error": "not_implemented", "endpoint": "/api/diary",
+  "docs": "docs/API.md", "message": "接口约定已公开，实现请自行完成。" }</span></pre>
+  </div>
+</section>
+
+<section id="arch">
+  <div class="wrap">
+    <h2>形状</h2>
+    <p class="sub">通道 → 人格 → 大脑 → 工具 / 记忆 / 日记 → 控制台。每一层只做一件事。</p>
+    <div class="arch">
+      <div class="row">
+        <div class="box">微信 A<em>真实的人</em></div>
+        <div class="box">微信 B<em>真实的人</em></div>
+      </div>
+      <div class="arrow">↓</div>
+      <div class="row">
+        <div class="box">通道 A<em>收发 / 去重 / 限速</em></div>
+        <div class="box">通道 B<em>收发 / 去重 / 限速</em></div>
+      </div>
+      <div class="arrow">↓</div>
+      <div class="row">
+        <div class="box">人格 A<em>称呼 / 语气 / 边界</em></div>
+        <div class="box">人格 B<em>称呼 / 语气 / 边界</em></div>
+      </div>
+      <div class="arrow">↓</div>
+      <div class="row"><div class="box hi">大脑 · 编排<em>上下文 → 工具 → 气泡</em></div></div>
+      <div class="arrow">↓</div>
+      <div class="row">
+        <div class="box">工具<em>抓取 / 浏览器 / 提醒 / 文件</em></div>
+        <div class="box">记忆<em>会话 / 事实 / 向量 / 检索</em></div>
+        <div class="box">日记<em>情绪 / 每晚一篇</em></div>
+        <div class="box">控制台<em>状态 / 流水 / 谱系</em></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="why">
+  <div class="wrap">
+    <h2>为什么闭源</h2>
+    <p class="sub">公开接口是诚意，公开实现是把自己踩的坑送人。</p>
+    <div class="why">
+      <div class="card"><span class="num">01</span><h3>权属要清楚</h3><p>这套系统有软件著作权登记，后续要落到自己的域名与产品线上；代码与文档的权属链条必须干净。</p></div>
+      <div class="card"><span class="num">02</span><h3>实现是成本</h3><p>双人格、四层记忆、防泛洪、浏览器内存闸门，是一版一版踩坑换来的；公开实现等于把成本送人。</p></div>
+      <div class="card"><span class="num">03</span><h3>接口可以公开</h3><p>把能力与边界摊开，是告诉你「这东西存在」，不是占坑，也不阻止你做得更好。</p></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>Cola · Comic series · 契约快照 2026-10-28</span>
+    <span>MIT for this skeleton only · 不授予实现、名称或背书</span>
+  </div>
+</footer>
+
+</body>
+</html>
